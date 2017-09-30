@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="mdui-center">
+    <form action="{% url 'chatroom:login' %}" method="post" id ="username">
+        <!--<div>Your nickname:  <input type="text" name="username">-->
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+            {{ field.errors }}
+            {{ field.label_tag }}
+            {{ field }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="mdui-btn mdui-btn-raised">Enter</button>
+    </form>
+    <p>Don't have an account? <a href="{% url 'chatroom:signup' %}">Sign up!</a></p>
+<div>
+{% endblock %}
+

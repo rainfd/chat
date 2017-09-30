@@ -1,0 +1,12 @@
+.message-right {
+    float: right;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 8px;
+  /*margin-bottom: 24px;*/
+  float: left;
+  width: 75%;
+  background: white
+}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="mdui-row">
+    {% for room in rooms %}
+    <div class="mdui-col-sm-6 mdui-col-md-4">
+        <div class="mdui-card mdui-m-a-4">
+            <a href="{% url 'chatroom:room' room %}">
+                <div class="mdui-card-media">
+                    <img src="{% static 'kumo2.gif'%}"/>
+                </div>
+            </a>
+            <div class="mdui-card-primary">
+                <div class="mdui-card-primary-title">{{ room }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

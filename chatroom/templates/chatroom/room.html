@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'room.css' %}">
+{% endblock %}
+
+{% block drawer %}
+<div class="mdui-drawer mdui-drawer-right">
+    <ul class="mdui-list mdui-list-dense">
+        <li class="mdui-subheader-inset">User</li>
+            <ul class="mdui-list mdui-list-dense" id="drawer-list"></ul>
+        <!--
+        {% for user in user_list %}
+            <li class="mdui-list-item mdui-ripple">
+                <div class="mdui-list-item-content">{{ user }}</div>
+            </li>
+        {% endfor %}
+        -->
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<br />
+
+<div class="message-box"></div>
+
+<br /><br /><br />
+
+<div class="bottom">
+    <form id="chatform">
+        <div class="mdui-row mdui-valign">
+            <div class="mdui-col-xs-11">
+                <div class="mdui-textfield">
+                  <textarea class="mdui-textfield-input" type="text" id="message"></textarea>
+                </div>
+            </div>
+            <div class="mdui-col-xs-1">
+                <input class="mdui-btn mdui-btn-raised" type="submit" value="Enter"></button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block afterbody %}
+<script>
+socket = new WebSocket("ws://" + window.location.host + "/chat/" + "{{ room_name }}" + "/");
+
+socket.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+
+    if (typeof data.userlist !== "undefined") {
+        getuserlist();
+    }
+
+    if (typeof data.user == "undefined") {
+        addinfor(data.message);
+    } else {
+        addmessage(data.message, data.user);
+    }
+
+    $(window).scrollTop($(window).height())
+
+}
+
+function addmessage(message, user) {
+    var chat = $(".message-box")
+    var head = $("<div></div>")
+    var mes = $("<div></div>")
+    var text = $("<div></div>")
+
+    if (user == "{{ user.username }}") {
+        // message
+        mes.addClass("mdui-row")
+
+        var box = $("<div></div>")
+        box.addClass("mdui-col-offset-xs-9")
+        text.addClass("mdui-chip")
+        text.append($("<span class='mdui-chip-title'></span>").text(message))
+
+        box.append(text)
+        mes.append(box)
+        chat.append(mes)
+    } else {
+        // user
+        head.addClass("mdui-row")
+        head.append("<i class='mdui-icon material-icons'>account_circle</i>")
+        head.append($("<span></span>").text(user))
+
+        // message
+        mes.addClass("mdui-row")
+        text.addClass("mdui-chip")
+        text.append($("<span class='mdui-chip-title'></span>").text(message))
+
+        mes.append(text)
+        chat.append(head, mes)
+    }
+}
+
+function addinfor(e) {
+    var chat = $(".message-box")
+    var infor = $("<div class='mdui-center' style='width: 200px'></div>").text(e)
+
+    chat.append(infor)
+}
+
+function getuserlist() {
+    $.get("{% url 'chatroom:userlist' room_name %}", function(users) {
+        var drawer = $("#drawer-list")
+        drawer.empty()
+        for (var i in users) {
+            var li = $("<li class='mdui-list-item mdui-ripple'></li>")
+            var item = $("<div class='mdui-list-item-content'></div>")
+            li.append(item.text(users[i]))
+            drawer.append(li)
+        }
+    })
+}
+
+socket.onopen = function() {
+    //socket.send(JSON.stringify(message))
+    getuserlist()
+}
+
+if (socket.readyState == WebSocket.OPEN) socket.onopen();
+
+$("#chatform").on("submit", function(event) {
+    var data = $('#message').val()
+
+    if (data.length == 0) {
+        return false;
+    }
+
+    var message = {
+        message: data,
+    }
+    socket.send(JSON.stringify(message));
+    $('#message').val('').focus();
+    return false;
+});
+
+$('#message').bind('keypress',function(event){  
+    if(event.keyCode == "13") {
+        $('#chatform').submit();
+    }
+});
+</script>
+{% endblock %}
